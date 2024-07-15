@@ -1,0 +1,15 @@
+version: "2"
+
+services:
+  de-final-prj:
+    image: cr.yandex/crp1r8pht0n0gl25aug1/de-final-prj:latest
+    ports:
+      - 8280:8280
+      - 8998:8998
+      - 15432:5432
+    volumes:
+      - mydb:/var/lib/postgresql
+      - ./src/dags:/lessons/dags
+
+volumes:
+  mydb:
