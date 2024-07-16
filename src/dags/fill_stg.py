@@ -31,10 +31,40 @@ def fill_stg_dag():
                 logger.info(f"transactions_batch index: {i}")
                 break
 
+    @task(task_id="update_currencies_history_stg")
+    def update_currencies_history_stg():
+        prepare_sql = """
+            DROP TABLE IF EXISTS STV2024041049__STAGING.currencies_history_tmp;
+            CREATE TABLE STV2024041049__STAGING.currencies_history_tmp LIKE STV2024041049__STAGING.currencies_history INCLUDING PROJECTIONS;
+        """
+
+        copy_sql = """    
+            COPY STV2024041049__STAGING.currencies_history (currency_code,currency_code_with,date_update,currency_with_div)
+            FROM LOCAL '/data/currencies_history.csv'
+            DELIMITER ','
+            SKIP 1
+            REJECTED DATA AS TABLE STV2024041049__STAGING.currencies_history_rej; 
+        """
+
+        merge_sql = """
+            MERGE INTO STV2024041049__STAGING.currencies_history tgt
+            USING STV2024041049__STAGING.currencies_history_tmp src 
+            ON (tgt.currency_code = src.currency_code 
+                AND tgt.currency_code_with = src.currency_code_with 
+                AND tgt.date_update=src.date_update)
+            WHEN NOT MATCHED THEN INSERT VALUES (src.currency_code, src.currency_code_with, src.currency_with_div, src.date_update); 
+        """
+
+        try_execute(prepare_sql)
+        try_execute(copy_sql)
+        try_execute(merge_sql)
+
     currencies_history = fetch_currencies_history()
     transactions_batch = fetch_transactions_batch()
+    currencies_history_stg = update_currencies_history_stg()
 
-    (start >> [currencies_history, transactions_batch] >> end)
+    (start >> currencies_history >> currencies_history_stg >> end)
+    (start >> transactions_batch >> end)
 
 
 fill_stg = fill_stg_dag()
