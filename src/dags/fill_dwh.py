@@ -46,13 +46,13 @@ def fill_dwh_dag2():
             	end as currency_with_div
             from
             	STV2024041049__STAGING.transactions t
-            join STV2024041049__DWH.global_metrics ch on
+            join STV2024041049__STAGING.currencies_history ch on
             	t.currency_code = ch.currency_code
             	and t.transaction_dt::date = ch.date_update
             where
             	t.account_number_from > 0
             	and status = 'done'
-                and transaction_dt::date = '{select_date}'
+            	and t.transaction_dt::date = '{select_date}'
             	and (t.currency_code = '{USD_CURRENCY_CODE}'
             		or currency_code_with = '{USD_CURRENCY_CODE}')
         ),
@@ -92,7 +92,7 @@ def fill_dwh_dag2():
         from
         	result;     
         """
-        
+
         logger.info(sql)
 
         res = try_execute(sql)
