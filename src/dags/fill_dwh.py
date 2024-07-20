@@ -12,11 +12,12 @@ logger = logging.getLogger(__name__)
 
 @dag(
     start_date=datetime(2022, 10, 1),
-    end_date=datetime(2022, 10, 3),
+    end_date=datetime(2022, 11, 1),
     schedule_interval="@daily",
+    max_active_runs=1,
     catchup=True,
 )
-def fill_dwh_dag2():
+def fill_dwh_dag():
     start = EmptyOperator(task_id="start")
     end = EmptyOperator(task_id="end")
 
@@ -153,4 +154,4 @@ def fill_dwh_dag2():
     start >> dt >> data >> dwh >> end
 
 
-dwh_dag2 = fill_dwh_dag2()
+dwh_dag = fill_dwh_dag()
