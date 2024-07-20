@@ -14,7 +14,9 @@ CREATE TABLE STV2024041049__DWH.global_metrics (
     cnt_accounts_make_transactions int
 );
 
-CREATE PROJECTION STV2024041049__DWH.global_metrics (
+CREATE PROJECTION STV2024041049__DWH.global_metrics
+/*+createtype(P)*/
+(
     date_update,
     currency_from,
     amount_total,
@@ -32,4 +34,4 @@ SELECT
 FROM
     STV2024041049__DWH.global_metrics
 ORDER BY
-    global_metrics.date_update SEGMENTED BY hash(currency_from) ALL NODES KSAFE 1;
+    date_update SEGMENTED BY hash(currency_from) ALL NODES KSAFE 1;
