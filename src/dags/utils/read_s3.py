@@ -16,5 +16,7 @@ def read_s3(file_name):
     )
 
     df = pd.read_csv(f"/data/{file_name}")
+    df.drop_duplicates(inplace=True)
+    df.to_csv(f"/data/{file_name}", index=False)
 
     return df

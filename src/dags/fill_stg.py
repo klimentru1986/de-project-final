@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime
 
-import pandas as pd
 from airflow.decorators import dag, task
 from airflow.operators.empty import EmptyOperator
 from utils.read_s3 import read_s3
@@ -21,11 +20,9 @@ def fill_stg_dag():
 
     @task(task_id="transactions_batch")
     def fetch_transactions_batch():
-        i = 1
-        while True:
+        for i in range(1, 1000):
             try:
                 logger.info(read_s3(f"transactions_batch_{i}.csv").head())
-                i += 1
             except Exception as e:
                 logger.info(e)
                 logger.info(f"transactions_batch index: {i - 1}")
@@ -85,7 +82,9 @@ def fill_stg_dag():
                 ON (tgt.operation_id = src.operation_id 
                     AND tgt.account_number_from = src.account_number_from
                     AND tgt.account_number_to = src.account_number_to
+                    AND tgt.currency_code = src.currency_code
                     AND tgt.transaction_type = src.transaction_type 
+                    AND tgt.country = src.country
                     AND tgt.status = src.status
                     AND tgt.transaction_dt=src.transaction_dt)
                 WHEN NOT MATCHED THEN INSERT VALUES (
